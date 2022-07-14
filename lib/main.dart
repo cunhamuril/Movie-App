@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/http/clients/genre_client.dart';
 import 'package:movie_app/pages/home_page.dart';
+import 'package:movie_app/pages/movie_page.dart';
 import 'package:movie_app/theme/colors.dart';
 
 void main() {
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: LightThemeColors.primaryColor,
+        backgroundColor: Colors.white,
         primarySwatch: Colors.indigo,
         dividerColor: LightThemeColors.textLow,
         appBarTheme: const AppBarTheme(
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         primaryColor: Colors.white,
+        backgroundColor: DarkThemeColors.primaryColorAccent,
         scaffoldBackgroundColor: LightThemeColors.primaryColor,
         dividerColor: LightThemeColors.textLow,
         primarySwatch: Colors.indigo,
@@ -39,7 +42,7 @@ class MyApp extends StatelessWidget {
           bodyText2: TextStyle(color: DarkThemeColors.textLow),
         ),
       ),
-      home: const HomePage(),
+      home: const MoviePage(),
     );
   }
 }

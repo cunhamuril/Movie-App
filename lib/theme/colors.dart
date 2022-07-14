@@ -6,5 +6,6 @@ class LightThemeColors {
 }
 
 class DarkThemeColors {
-  static const Color textLow = Color(0xFFEBEBEB);
+  static const Color primaryColorAccent = Color(0xFF18182E);
+  static const Color textLow = Color(0xFFBDC1F5);
 }

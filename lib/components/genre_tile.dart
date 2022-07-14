@@ -4,13 +4,13 @@ import 'package:movie_app/models/genre.dart';
 class GenreTile extends StatelessWidget {
   final Genre genre;
   final bool isActive;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const GenreTile({
     Key? key,
     required this.genre,
     this.isActive = false,
-    required this.onTap,
+    this.onTap,
   }) : super(key: key);
 
   @override
