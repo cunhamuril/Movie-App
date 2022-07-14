@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           bodyText2: TextStyle(color: DarkThemeColors.textLow),
         ),
       ),
-      home: const MoviePage(),
+      home: const HomePage(),
     );
   }
 }

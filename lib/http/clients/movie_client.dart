@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:movie_app/config/api.dart';
 import 'package:movie_app/http/client.dart';
+import 'package:movie_app/models/cast.dart';
 import 'package:movie_app/models/category.dart';
 import 'package:movie_app/models/genre.dart';
 import 'package:movie_app/models/movie.dart';
@@ -62,6 +63,38 @@ class MovieClient {
     List<Movie> movies = _toMoviesList(response);
 
     return movies;
+  }
+
+  Future<Movie> findMovieById(int movieId) async {
+    Response response = await client.get(
+      Uri.parse(
+        '$API_BASE_URL/movie/$movieId?api_key=$API_KEY&language=pt-BR',
+      ),
+    );
+
+    final Map<String, dynamic> decodedJson = jsonDecode(response.body);
+
+    Movie movie = Movie.fromJson(decodedJson);
+
+    return movie;
+  }
+
+  Future<List<Cast>> findMovieCast(int movieId) async {
+    Response response = await client.get(
+      Uri.parse(
+        '$API_BASE_URL/movie/$movieId/credits?api_key=$API_KEY&language=pt-BR',
+      ),
+    );
+
+    final Map<String, dynamic> decodedJson = jsonDecode(response.body);
+
+    final List<Cast> cast = decodedJson['cast']
+        .map<Cast>(
+          (cast) => Cast.fromJson(cast),
+        )
+        .toList();
+
+    return cast;
   }
 
   static List<Movie> _toMoviesList(Response response) {

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/config/api.dart';
+import 'package:movie_app/models/movie.dart';
 
 class MovieHeader extends StatelessWidget {
+  final Movie movie;
+
   const MovieHeader({
     Key? key,
+    required this.movie,
   }) : super(key: key);
 
   @override
@@ -17,7 +21,31 @@ class MovieHeader extends StatelessWidget {
               bottomLeft: Radius.circular(50),
             ),
             child: Image.network(
-              '$API_IMAGE_BASE_URL/tqUD26YGjKmFqOJAgbNBah1gX0N.jpg',
+              movie.cover!,
+              loadingBuilder: (
+                BuildContext context,
+                Widget child,
+                ImageChunkEvent? loadingProgress,
+              ) {
+                if (loadingProgress == null) return child;
+
+                final double? loadingPercent =
+                    loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null;
+
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54.withOpacity(0.3),
+                  ),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingPercent,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Container(
@@ -56,9 +84,9 @@ class MovieHeader extends StatelessWidget {
                           text: TextSpan(
                             style: Theme.of(context).textTheme.bodyText1,
                             children: [
-                              const TextSpan(
-                                text: '8.2',
-                                style: TextStyle(
+                              TextSpan(
+                                text: movie.rate.toString(),
+                                style: const TextStyle(
                                   fontSize: 19,
                                 ),
                               ),
@@ -78,7 +106,7 @@ class MovieHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '150,212',
+                          movie.voteCount!.toString(),
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context)
@@ -95,7 +123,7 @@ class MovieHeader extends StatelessWidget {
                         const Icon(Icons.star_border, size: 40),
                         const SizedBox(height: 2),
                         Text(
-                          'Rate This',
+                          'Avaliar',
                           style: TextStyle(
                             fontSize: 16,
                             color: Theme.of(context).textTheme.bodyText1?.color,
@@ -135,7 +163,7 @@ class MovieHeader extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '62 critic reviews',
+                          '62 críticas',
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context)

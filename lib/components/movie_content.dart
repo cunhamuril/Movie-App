@@ -1,30 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/components/genre_tile.dart';
 import 'package:movie_app/components/person_tile.dart';
+import 'package:movie_app/http/clients/movie_client.dart';
+import 'package:movie_app/models/cast.dart';
 import 'package:movie_app/models/genre.dart';
+import 'package:movie_app/models/movie.dart';
 
 class MovieContent extends StatelessWidget {
-  const MovieContent({Key? key}) : super(key: key);
+  final Movie movie;
+
+  const MovieContent({
+    Key? key,
+    required this.movie,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        _Heading(),
-        SizedBox(height: 32),
-        _Summary(),
-        SizedBox(height: 48),
-        _Cast(),
+      children: [
+        _Heading(
+          movieTitle: movie.title,
+          movieReleaseDate: movie.releaseDate!,
+          movieRuntime: movie.runtime!,
+          movieGenres: movie.genres!,
+        ),
+        const SizedBox(height: 32),
+        _Overview(
+          movieOverview: movie.overview!,
+        ),
+        const SizedBox(height: 48),
+        _Cast(movieId: movie.id),
       ],
     );
   }
 }
 
 class _Heading extends StatelessWidget {
+  final String movieTitle;
+  final String movieReleaseDate;
+  final int movieRuntime;
+  final List<Genre> movieGenres;
+
   const _Heading({
     Key? key,
+    required this.movieTitle,
+    required this.movieReleaseDate,
+    required this.movieRuntime,
+    required this.movieGenres,
   }) : super(key: key);
+
+  String getMovieReleaseYear() {
+    return movieReleaseDate.split('-')[0];
+  }
+
+  String getMovieRunTimeInHoursAndMinutes() {
+    Duration duration = Duration(minutes: movieRuntime);
+
+    String hours = duration.toString().split(':')[0];
+    String minutes = duration.toString().split(':')[1];
+
+    return '${hours}h ${minutes}m';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +74,7 @@ class _Heading extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ford v Ferrari',
+                movieTitle,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
@@ -48,7 +85,7 @@ class _Heading extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '2019',
+                    getMovieReleaseYear(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -66,7 +103,7 @@ class _Heading extends StatelessWidget {
                   ),
                   const SizedBox(width: 24),
                   Text(
-                    '2h 32m',
+                    getMovieRunTimeInHoursAndMinutes(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -81,14 +118,15 @@ class _Heading extends StatelessWidget {
         const SizedBox(height: 20),
         SizedBox(
           height: 40,
-          child: ListView(
+          child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             scrollDirection: Axis.horizontal,
-            children: [
-              GenreTile(genre: Genre(id: 0, name: 'Action')),
-              GenreTile(genre: Genre(id: 1, name: 'Biography')),
-              GenreTile(genre: Genre(id: 2, name: 'Drama')),
-            ],
+            itemCount: movieGenres.length,
+            itemBuilder: (context, index) {
+              final Genre genre = movieGenres[index];
+
+              return GenreTile(genre: Genre(id: genre.id, name: genre.name));
+            },
           ),
         )
       ],
@@ -96,9 +134,12 @@ class _Heading extends StatelessWidget {
   }
 }
 
-class _Summary extends StatelessWidget {
-  const _Summary({
+class _Overview extends StatelessWidget {
+  final String movieOverview;
+
+  const _Overview({
     Key? key,
+    required this.movieOverview,
   }) : super(key: key);
 
   @override
@@ -109,7 +150,7 @@ class _Summary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Plot Summary',
+            'Visão geral',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w500,
@@ -117,9 +158,7 @@ class _Summary extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'American car designer Carroll Shelby and driver Kn Miles battle corporate interference and the laws of physics to build a revolutionary race car for Ford in order.',
-          ),
+          Text(movieOverview),
         ],
       ),
     );
@@ -127,8 +166,13 @@ class _Summary extends StatelessWidget {
 }
 
 class _Cast extends StatelessWidget {
-  const _Cast({
+  final MovieClient movieClient = MovieClient();
+
+  final int movieId;
+
+  _Cast({
     Key? key,
+    required this.movieId,
   }) : super(key: key);
 
   @override
@@ -142,7 +186,7 @@ class _Cast extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Cast & Crew',
+                'Elenco',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w500,
@@ -153,24 +197,41 @@ class _Cast extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(
-          height: 190,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            scrollDirection: Axis.horizontal,
-            children: const [
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-              PersonTile(),
-            ],
-          ),
-        ),
+        FutureBuilder<List<Cast>>(
+          future: movieClient.findMovieCast(movieId),
+          builder: ((context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.none) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData) {
+              final List<Cast> cast = snapshot.data ?? [];
+
+              return SizedBox(
+                height: 190,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: cast.length,
+                  itemBuilder: (context, index) {
+                    return PersonTile(cast: cast[index]);
+                  },
+                ),
+              );
+            }
+
+            return const Text('Unknown error');
+          }),
+        )
       ],
     );
   }

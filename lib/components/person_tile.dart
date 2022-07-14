@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/config/api.dart';
+import 'package:movie_app/models/cast.dart';
 
 class PersonTile extends StatelessWidget {
+  final Cast cast;
+
   const PersonTile({
     Key? key,
+    required this.cast,
   }) : super(key: key);
 
   @override
@@ -11,21 +15,55 @@ class PersonTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 24),
       child: SizedBox(
-        width: 80,
+        width: 100,
         child: Column(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(50),
-              child: Image.network(
-                '$API_IMAGE_BASE_URL/83o3koL82jt30EJ0rz4Bnzrt2dd.jpg',
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
+              child: cast.profileImagePath != null
+                  ? Image.network(
+                      cast.profileImagePath!,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (
+                        BuildContext context,
+                        Widget child,
+                        ImageChunkEvent? loadingProgress,
+                      ) {
+                        if (loadingProgress == null) return child;
+
+                        final double? loadingPercent =
+                            loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null;
+
+                        return Container(
+                          height: 80,
+                          width: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.black54.withOpacity(0.3),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingPercent,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.black54.withOpacity(0.3),
+                      ),
+                    ),
             ),
             const SizedBox(height: 6),
             Text(
-              'James Mangold',
+              cast.name,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -34,10 +72,10 @@ class PersonTile extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              'Actor',
+              cast.character,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 12,
                 color: Theme.of(context)
                     .textTheme
                     .bodyText2

@@ -48,6 +48,7 @@ class MoviesList extends StatelessWidget {
 
                 return MovieTile(
                   movie: Movie(
+                    id: movie.id,
                     title: movie.title,
                     poster: movie.poster,
                     rate: movie.rate,
