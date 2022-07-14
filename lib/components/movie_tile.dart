@@ -18,8 +18,34 @@ class MovieTile extends StatelessWidget {
                 ? Image.network(
                     movie.poster!,
                     width: 210,
-                    height: 310,
+                    height: 320,
                     fit: BoxFit.cover,
+                    loadingBuilder: (
+                      BuildContext context,
+                      Widget child,
+                      ImageChunkEvent? loadingProgress,
+                    ) {
+                      if (loadingProgress == null) return child;
+
+                      final double? loadingPercent =
+                          loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null;
+
+                      return Container(
+                        height: 310,
+                        width: 210,
+                        decoration: BoxDecoration(
+                          color: Colors.black54.withOpacity(0.3),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingPercent,
+                          ),
+                        ),
+                      );
+                    },
                   )
                 : Container(
                     height: 310,
